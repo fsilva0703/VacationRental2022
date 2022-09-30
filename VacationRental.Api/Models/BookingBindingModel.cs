@@ -1,4 +1,6 @@
-﻿namespace VacationRental.Domain.VacationRental.Models
+﻿using System;
+
+namespace VacationRental.Api.Models
 {
     public class BookingBindingModel
     {
@@ -11,7 +13,6 @@
         }
 
         private DateTime _startIgnoreTime;
-
         public int Nights { get; set; }
     }
 }

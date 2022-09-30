@@ -1,55 +1,17 @@
-﻿using Microsoft.AspNetCore.Builder;
+﻿using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using Microsoft.OpenApi.Models;
-using System.Collections.Generic;
-using VacationRental.Api.Extensions;
 
-var builder = WebApplication.CreateBuilder(args);
-
-builder.Services.AddOptions();
-var configuration = (IConfiguration)builder.Configuration;
-builder.Services.AddLogging();
-
-builder.Services.AddBusinessServices();
-
-builder.Services.AddCors(options =>
+namespace VacationRental.Api
 {
-    options.AddDefaultPolicy(
-        policy =>
-        {
-            policy.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod();
-        });
-});
-
-builder.Services.AddControllers();
-
-builder.Services.ConfigureSwagger();
-
-var app = builder.Build();
-app.UseCors();
-app.ConfigureExceptionHandler();
-
-app.UseHttpsRedirection();
-
-app.UseAuthorization();
-if (app.Environment.IsEnvironment("Testing") || app.Environment.IsEnvironment("Staging") || app.Environment.IsDevelopment())
-{
-    var basePath = "/VacationRental v1";
-    app.UseSwagger(c =>
+    public class Program
     {
-        c.PreSerializeFilters.Add((swaggerDoc, httpReq) =>
+        public static void Main(string[] args)
         {
-            if (httpReq.Host.Host == "localhost")
-                return;
-            swaggerDoc.Servers = new List<OpenApiServer> { new OpenApiServer { Url = $"https://{httpReq.Host.Value}{basePath}" } };
-        });
-    });
-    app.UseSwaggerUI();
+            CreateWebHostBuilder(args).Build().Run();
+        }
+
+        public static IWebHostBuilder CreateWebHostBuilder(string[] args) =>
+            WebHost.CreateDefaultBuilder(args)
+                .UseStartup<Startup>();
+    }
 }
-
-app.MapControllers();
-
-app.Run();

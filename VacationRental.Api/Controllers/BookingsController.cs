@@ -1,7 +1,7 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using System.Threading.Tasks;
-using VacationRental.Domain.VacationRental.Interfaces;
-using VacationRental.Domain.VacationRental.Models;
+﻿using System;
+using System.Collections.Generic;
+using Microsoft.AspNetCore.Mvc;
+using VacationRental.Api.Models;
 
 namespace VacationRental.Api.Controllers
 {
@@ -9,43 +9,64 @@ namespace VacationRental.Api.Controllers
     [ApiController]
     public class BookingsController : ControllerBase
     {
-        private readonly IBookingService _bookingService;
+        private readonly IDictionary<int, RentalViewModel> _rentals;
+        private readonly IDictionary<int, BookingViewModel> _bookings;
 
-        public BookingsController(IBookingService paramBookingService)
+        public BookingsController(
+            IDictionary<int, RentalViewModel> rentals,
+            IDictionary<int, BookingViewModel> bookings)
         {
-            _bookingService = paramBookingService;
+            _rentals = rentals;
+            _bookings = bookings;
         }
 
-        /// <summary>
-        ///  This method is responsible to return the booking information.
-        /// </summary>
-        /// <param name="bookingId"></param>
-        /// <returns>Return a object BookingViewModel</returns>
-        /// <response code="200">BookingViewModel</response>
-        /// <response code="404">The booking with the parameters passed does not exist.</response> 
-        /// <response code="500">Internal error from Server.</response> 
-        [ProducesResponseType(typeof(BookingViewModel), 200)]
         [HttpGet]
         [Route("{bookingId:int}")]
-        public async Task<BookingViewModel> Get(int bookingId)
+        public BookingViewModel Get(int bookingId)
         {
-            return await _bookingService.Get(bookingId);
+            if (!_bookings.ContainsKey(bookingId))
+                throw new ApplicationException("Booking not found");
+
+            return _bookings[bookingId];
         }
 
-        /// <summary>
-        ///  This method is responsible to booking.
-        /// </summary>
-        /// <param name="bookingModel"></param>
-        /// <returns>Return a object ResourceIdViewModel</returns>
-        /// <response code="200">ResourceIdViewModel</response>
-        /// <response code="404">The rental with the parameters passed does not exist.</response> 
-        /// <response code="409">Could be exists conflict with the number of nights or the rental could not be available.</response> 
-        /// <response code="500">Internal error from Server.</response> 
-        [ProducesResponseType(typeof(ResourceIdViewModel), 200)]
         [HttpPost]
-        public async Task<ResourceIdViewModel> Post(BookingBindingModel bookingModel)
+        public ResourceIdViewModel Post(BookingBindingModel model)
         {
-            return await _bookingService.Post(bookingModel);
+            if (model.Nights <= 0)
+                throw new ApplicationException("Nigts must be positive");
+            if (!_rentals.ContainsKey(model.RentalId))
+                throw new ApplicationException("Rental not found");
+
+            for (var i = 0; i < model.Nights; i++)
+            {
+                var count = 0;
+                foreach (var booking in _bookings.Values)
+                {
+                    if (booking.RentalId == model.RentalId
+                        && (booking.Start <= model.Start.Date && booking.Start.AddDays(booking.Nights) > model.Start.Date)
+                        || (booking.Start < model.Start.AddDays(model.Nights) && booking.Start.AddDays(booking.Nights) >= model.Start.AddDays(model.Nights))
+                        || (booking.Start > model.Start && booking.Start.AddDays(booking.Nights) < model.Start.AddDays(model.Nights)))
+                    {
+                        count++;
+                    }
+                }
+                if (count >= _rentals[model.RentalId].Units)
+                    throw new ApplicationException("Not available");
+            }
+
+
+            var key = new ResourceIdViewModel { Id = _bookings.Keys.Count + 1 };
+
+            _bookings.Add(key.Id, new BookingViewModel
+            {
+                Id = key.Id,
+                Nights = model.Nights,
+                RentalId = model.RentalId,
+                Start = model.Start.Date
+            });
+
+            return key;
         }
     }
 }

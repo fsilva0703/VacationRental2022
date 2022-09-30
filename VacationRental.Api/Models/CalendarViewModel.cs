@@ -1,4 +1,6 @@
-﻿namespace VacationRental.Domain.VacationRental.Models
+﻿using System.Collections.Generic;
+
+namespace VacationRental.Api.Models
 {
     public class CalendarViewModel
     {

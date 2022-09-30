@@ -15,7 +15,7 @@ namespace VacationRental.Api.Tests
 
         public IntegrationFixture()
         {
-            _server = new TestServer(new WebHostBuilder());
+            _server = new TestServer(new WebHostBuilder().UseStartup<Startup>());
 
             Client = _server.CreateClient();
         }

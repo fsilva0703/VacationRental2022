@@ -1,9 +1,7 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Threading.Tasks;
-using VacationRental.Domain.VacationRental.Interfaces;
-using VacationRental.Domain.VacationRental.Models;
+using Microsoft.AspNetCore.Mvc;
+using VacationRental.Api.Models;
 
 namespace VacationRental.Api.Controllers
 {
@@ -11,57 +9,35 @@ namespace VacationRental.Api.Controllers
     [ApiController]
     public class RentalsController : ControllerBase
     {
-        private readonly IRentalsService _rentalsService;
+        private readonly IDictionary<int, RentalViewModel> _rentals;
 
-        public RentalsController(IRentalsService paramRentals)
+        public RentalsController(IDictionary<int, RentalViewModel> rentals)
         {
-            _rentalsService = paramRentals;
+            _rentals = rentals;
         }
 
-        /// <summary>
-        ///  This method is responsible to return the rental information.
-        /// </summary>
-        /// <param name="rentalId"></param>
-        /// <returns>Return a object RentalViewModel</returns>
-        /// <response code="200">RentalViewModel</response>
-        /// <response code="404">The rental with the parameters passed does not exist.</response> 
-        /// <response code="500">Internal error from Server.</response> 
-        [ProducesResponseType(typeof(RentalViewModel), 200)]
         [HttpGet]
         [Route("{rentalId:int}")]
-        public async Task<RentalViewModel> Get(int rentalId)
+        public RentalViewModel Get(int rentalId)
         {
-            return await _rentalsService.Get(rentalId);
+            if (!_rentals.ContainsKey(rentalId))
+                throw new ApplicationException("Rental not found");
+
+            return _rentals[rentalId];
         }
 
-        /// <summary>
-        ///  This method is responsible to add the rental by the hosts.
-        /// </summary>
-        /// <param name="rentalModel"></param>
-        /// <returns>Return a object ResourceIdViewModel</returns>
-        /// <response code="200">ResourceIdViewModel</response>
-        /// <response code="500">Internal error from Server.</response> 
-        [ProducesResponseType(typeof(ResourceIdViewModel), 200)]
         [HttpPost]
-        public async Task<ResourceIdViewModel> Post(RentalBindingModel rentalModel)
+        public ResourceIdViewModel Post(RentalBindingModel model)
         {
-            return await _rentalsService.Post(rentalModel);
-        }
+            var key = new ResourceIdViewModel { Id = _rentals.Keys.Count + 1 };
 
-        /// <summary>
-        ///  This method is responsible to update the rental by the hosts.
-        /// </summary>
-        /// <param name="rentalId"></param>
-        /// <param name="rentalModel"></param>
-        /// <returns>Return a object ResourceIdViewModel</returns>
-        /// <response code="200">ResourceIdViewModel</response>
-        /// <response code="500">Internal error from Server.</response> 
-        [ProducesResponseType(typeof(ResourceIdViewModel), 200)]
-        [HttpPut]
-        [Route("{rentalId:int}")]
-        public async Task<ResourceIdViewModel> Put(int rentalId, RentalBindingModel rentalModel)
-        {
-            return await _rentalsService.Put(rentalId, rentalModel);
+            _rentals.Add(key.Id, new RentalViewModel
+            {
+                Id = key.Id,
+                Units = model.Units
+            });
+
+            return key;
         }
     }
 }
