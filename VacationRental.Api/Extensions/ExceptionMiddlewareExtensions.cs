@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Http;
 using VacationRental.Domain.Extensions.Common;
 using VacationRental.Domain.Models.Error;
+using VacationRental.Domain.VacationRental.Extensions.Common;
 
 namespace VacationRental.Api.Extensions
 {
@@ -24,6 +25,7 @@ namespace VacationRental.Api.Extensions
                         {
                             NotFoundException => StatusCodes.Status404NotFound,
 							ConflictException => StatusCodes.Status409Conflict,
+							InternalException => StatusCodes.Status500InternalServerError,
 							_ => StatusCodes.Status500InternalServerError
 						};
 						await context.Response.WriteAsync(new ErrorDetails()

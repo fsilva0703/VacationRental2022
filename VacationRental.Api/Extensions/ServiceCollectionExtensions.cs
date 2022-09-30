@@ -6,10 +6,9 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
-using VacationRental.Api.Models;
-using VacationRental.Domain.Models;
 using VacationRental.Domain.VacationRental.Interfaces;
 using VacationRental.Domain.VacationRental.Interfaces.Repositories;
+using VacationRental.Domain.VacationRental.Models;
 using VacationRental.Domain.VacationRental.Service;
 using VacationRental.Infra;
 using VacationRental.Infra.Repoitory;
@@ -18,12 +17,16 @@ namespace VacationRental.Api.Extensions
 {
     public static class ServiceCollectionExtensions
     {
-        public static void AddBusinessServices(this IServiceCollection services, WebApplicationBuilder builder)
+        public static void AddBusinessServices(this IServiceCollection services)
         {
-            services.AddSingleton<IDictionary<int, RentalViewModel>>(new Dictionary<int, RentalViewModel>());
-            services.AddSingleton<IDictionary<int, BookingViewModel>>(new Dictionary<int, BookingViewModel>());
+            services.AddSingleton<IDictionary<int, int>>(new Dictionary<int, int>());
+            services.AddSingleton<IDictionary<DateTime, int>>(new Dictionary<DateTime, int>());
+            services.AddScoped<ICalendarService, CalendarService>();
             services.AddScoped<IBookingService, BookingService>();
+            services.AddScoped<IRentalsService, RentalsService>();
+            services.AddTransient<IRentalsRepository, RentalsRepository>();
             services.AddTransient<IBookingRepository, BookingRepository>();
+           
             services.AddDbContext<DatabaseInMemoryContext>(opt => opt.UseInMemoryDatabase(databaseName: "BookingDb"));
             services.AddMvc();
         }

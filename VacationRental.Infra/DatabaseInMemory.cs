@@ -1,5 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using VacationRental.Domain.Models;
+using VacationRental.Domain.VacationRental.Models;
 
 namespace VacationRental.Infra
 {
@@ -10,5 +10,6 @@ namespace VacationRental.Infra
         {
         }
         public DbSet<BookingViewModel>? Booking { get; set; }
+        public DbSet<RentalViewModel>? Rental { get; set; }
     }
 }

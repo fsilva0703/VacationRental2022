@@ -1,17 +1,24 @@
-﻿using VacationRental.Domain.Extensions.Common;
-using VacationRental.Domain.Models;
+﻿using System.Runtime.Serialization;
+using VacationRental.Domain.Extensions.Common;
+using VacationRental.Domain.VacationRental.Extensions.Enum;
 using VacationRental.Domain.VacationRental.Interfaces;
 using VacationRental.Domain.VacationRental.Interfaces.Repositories;
 using VacationRental.Domain.VacationRental.Models;
+using VacationRental.Domain.VacationRental.Utils;
 
 namespace VacationRental.Domain.VacationRental.Service
 {
     public class BookingService : IBookingService
     {
         private readonly IBookingRepository _bookingRepository;
-        public BookingService(IBookingRepository paramBooking)
+        private readonly IRentalsService _rentalsService;
+
+        private readonly IDictionary<int, int> _cacheBooking;
+        public BookingService(IDictionary<int, int> paramCacheBooking, IBookingRepository paramBookingRepository, IRentalsService paramRentalsService)
         {
-            _bookingRepository = paramBooking;
+            _bookingRepository = paramBookingRepository;
+            _rentalsService = paramRentalsService;
+            _cacheBooking = paramCacheBooking;
         }
 
         public async Task<BookingViewModel> Get(int bookingId)
@@ -22,7 +29,7 @@ namespace VacationRental.Domain.VacationRental.Service
             }
             catch(Exception)
             {
-                throw new NotFoundException("Booking not found");
+                throw new NotFoundException(EnumExceptions.BookingNotFound.GetAttributeOfType<EnumMemberAttribute>().Value);
             }
         }
 
@@ -34,18 +41,32 @@ namespace VacationRental.Domain.VacationRental.Service
             }
             catch (Exception)
             {
-                throw new NotFoundException("No booking was found");
+                throw new NotFoundException(EnumExceptions.BookingNotFound.GetAttributeOfType<EnumMemberAttribute>().Value);
+            }
+        }
+
+        public async Task<List<BookingViewModel>> GetByRentalId(int rentalId)
+        {
+            try
+            {
+                return await _bookingRepository.GetByRentalId(rentalId);
+            }
+            catch (Exception)
+            {
+                throw new NotFoundException(EnumExceptions.BookingNotFound.GetAttributeOfType<EnumMemberAttribute>().Value);
             }
         }
 
         public async Task<ResourceIdViewModel> Post(BookingBindingModel model)
         {
             if (model.Nights <= 0)
-                throw new ConflictException("Nights must be in minimum one.");
-            //if (!_rentals.ContainsKey(model.RentalId))
-            //    throw new NotFoundException("Rental not found");
+                throw new ConflictException(EnumExceptions.NightsConflict.GetAttributeOfType<EnumMemberAttribute>().Value);
 
-            var bookings = await _bookingRepository.Get();
+            var rentals = await _rentalsService.Get(model.RentalId);
+
+            var bookings = await _bookingRepository.GetByRentalId(model.RentalId);
+
+            int unit = 0;
 
             for (var i = 0; i < model.Nights; i++)
             {
@@ -53,25 +74,33 @@ namespace VacationRental.Domain.VacationRental.Service
                 
                 foreach (var booking in bookings)
                 {
-                    if (booking.RentalId == model.RentalId
-                        && (booking.Start <= model.Start.Date && booking.Start.AddDays(booking.Nights) > model.Start.Date)
-                        || (booking.Start < model.Start.AddDays(model.Nights) && booking.Start.AddDays(booking.Nights) >= model.Start.AddDays(model.Nights))
-                        || (booking.Start > model.Start && booking.Start.AddDays(booking.Nights) < model.Start.AddDays(model.Nights)))
+                    if ((booking.Start <= model.Start.Date && booking.Start.AddDays(booking.Nights + rentals.PreparationTimeInDays) > model.Start.Date)
+                        || (booking.Start < model.Start.AddDays(model.Nights + rentals.PreparationTimeInDays) && booking.Start.AddDays(booking.Nights + rentals.PreparationTimeInDays) >= model.Start.AddDays(model.Nights + rentals.PreparationTimeInDays))
+                        || (booking.Start > model.Start && booking.Start.AddDays(booking.Nights + rentals.PreparationTimeInDays) < model.Start.AddDays(model.Nights + rentals.PreparationTimeInDays)))
                     {
                         count++;
+                        unit = booking.Unit + 1;
                     }
                 }
-                //if (count >= _rentals[model.RentalId].Units)
-                //    throw new ConflictException("Not available");
+                if (count >= rentals.Units)
+                    throw new ConflictException(EnumExceptions.AvailableConflict.GetAttributeOfType<EnumMemberAttribute>().Value);
+
+                if (unit == 0) unit = 1;
+                    
             }
+
+            var key = new ResourceIdViewModel { Id = _cacheBooking.Keys.Count + 1 };
+            _cacheBooking.Add(key.Id, key.Id);
 
             var NewBooking =  new BookingViewModel
             {
-                Id = bookings.Count + 1,
+                Id = key.Id,
                 Nights = model.Nights,
                 RentalId = model.RentalId,
-                Start = model.Start.Date
-            };
+                Start = model.Start.Date,
+                End = model.Start.AddDays(model.Nights + rentals.PreparationTimeInDays),
+                Unit = unit
+            };          
 
             return await _bookingRepository.Post(NewBooking);
         }

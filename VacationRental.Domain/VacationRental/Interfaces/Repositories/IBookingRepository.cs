@@ -7,6 +7,8 @@ namespace VacationRental.Domain.VacationRental.Interfaces.Repositories
     {
         Task<BookingViewModel> Get(int bookingId);
         Task<List<BookingViewModel>> Get();
+        Task<List<BookingViewModel>> GetByRentalId(int rentalId);
         Task<ResourceIdViewModel> Post(BookingViewModel model);
+        Task<ResourceIdViewModel> Put(BookingViewModel bookingModel);
     }
 }

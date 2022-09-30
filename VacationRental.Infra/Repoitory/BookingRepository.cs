@@ -1,5 +1,4 @@
-﻿using VacationRental.Domain.Models;
-using VacationRental.Domain.VacationRental.Interfaces.Repositories;
+﻿using VacationRental.Domain.VacationRental.Interfaces.Repositories;
 using VacationRental.Domain.VacationRental.Models;
 
 namespace VacationRental.Infra.Repoitory
@@ -14,13 +13,17 @@ namespace VacationRental.Infra.Repoitory
 
         public async Task<BookingViewModel> Get(int bookingId)
         {
-            var result = _context.Booking.First(x => x.Id == bookingId);
-            return result;
+            return _context.Booking.First(x => x.Id == bookingId);
         }
 
         public async Task<List<BookingViewModel>> Get()
         {
             return _context.Booking.ToList();
+        }
+
+        public async Task<List<BookingViewModel>> GetByRentalId(int rentalId)
+        {
+            return _context.Booking.Where(x => x.RentalId == rentalId).ToList();
         }
 
         public async Task<ResourceIdViewModel> Post(BookingViewModel bookingModel)
@@ -29,6 +32,19 @@ namespace VacationRental.Infra.Repoitory
             _context.SaveChanges();
 
             var key = new ResourceIdViewModel { Id = bookingModel.Id };
+
+            return (key);
+        }
+
+        public async Task<ResourceIdViewModel> Put(BookingViewModel bookingModel)
+        {
+            var bookingTable = _context?.Booking?.First(x => x.Id == bookingModel.Id);
+            bookingTable.End = bookingModel.End;
+
+            _context.Entry(bookingTable).State = Microsoft.EntityFrameworkCore.EntityState.Modified;
+            _context.SaveChanges();
+
+            var key = new ResourceIdViewModel { Id = bookingTable.Id };
 
             return (key);
         }

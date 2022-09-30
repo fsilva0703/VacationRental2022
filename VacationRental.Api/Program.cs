@@ -13,7 +13,7 @@ builder.Services.AddOptions();
 var configuration = (IConfiguration)builder.Configuration;
 builder.Services.AddLogging();
 
-builder.Services.AddBusinessServices(builder);
+builder.Services.AddBusinessServices();
 
 builder.Services.AddCors(options =>
 {

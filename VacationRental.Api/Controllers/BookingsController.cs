@@ -1,7 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
-using VacationRental.Domain.Extensions.Common;
-using VacationRental.Domain.Models;
 using VacationRental.Domain.VacationRental.Interfaces;
 using VacationRental.Domain.VacationRental.Models;
 
@@ -41,6 +39,7 @@ namespace VacationRental.Api.Controllers
         /// <returns>Return a object ResourceIdViewModel</returns>
         /// <response code="200">ResourceIdViewModel</response>
         /// <response code="404">The rental with the parameters passed does not exist.</response> 
+        /// <response code="409">Could be exists conflict with the number of nights or the rental could not be available.</response> 
         /// <response code="500">Internal error from Server.</response> 
         [ProducesResponseType(typeof(ResourceIdViewModel), 200)]
         [HttpPost]

@@ -11,6 +11,7 @@
         }
 
         private DateTime _startIgnoreTime;
+
         public int Nights { get; set; }
     }
 }
