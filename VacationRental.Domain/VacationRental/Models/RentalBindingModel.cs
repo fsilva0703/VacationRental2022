@@ -3,7 +3,7 @@
     public class RentalBindingModel
     {
         /// <summary>
-        /// The identification of each unit
+        /// Number of Units for each rental
         /// </summary>
         public int Units { get; set; }
         /// <summary>

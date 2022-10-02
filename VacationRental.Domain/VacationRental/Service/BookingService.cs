@@ -13,12 +13,10 @@ namespace VacationRental.Domain.VacationRental.Service
         private readonly IBookingRepository _bookingRepository;
         private readonly IRentalsService _rentalsService;
 
-        private readonly IDictionary<int, int> _cacheBooking;
-        public BookingService(IDictionary<int, int> paramCacheBooking, IBookingRepository paramBookingRepository, IRentalsService paramRentalsService)
+        public BookingService(IBookingRepository paramBookingRepository, IRentalsService paramRentalsService)
         {
             _bookingRepository = paramBookingRepository;
             _rentalsService = paramRentalsService;
-            _cacheBooking = paramCacheBooking;
         }
 
         public async Task<BookingViewModel> Get(int bookingId)
@@ -89,12 +87,12 @@ namespace VacationRental.Domain.VacationRental.Service
                     
             }
 
-            var key = new ResourceIdViewModel { Id = _cacheBooking.Keys.Count + 1 };
-            _cacheBooking.Add(key.Id, key.Id);
+            int? lastId = await _bookingRepository.GetLastId();
+            lastId = lastId is null ? 0 : lastId;
 
             var NewBooking =  new BookingViewModel
             {
-                Id = key.Id,
+                Id = (int)lastId + 1,
                 Nights = model.Nights,
                 RentalId = model.RentalId,
                 Start = model.Start.Date,

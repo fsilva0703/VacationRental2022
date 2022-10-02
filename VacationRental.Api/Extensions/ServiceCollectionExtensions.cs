@@ -8,7 +8,6 @@ using System.IO;
 using System.Reflection;
 using VacationRental.Domain.VacationRental.Interfaces;
 using VacationRental.Domain.VacationRental.Interfaces.Repositories;
-using VacationRental.Domain.VacationRental.Models;
 using VacationRental.Domain.VacationRental.Service;
 using VacationRental.Infra;
 using VacationRental.Infra.Repoitory;
@@ -19,7 +18,6 @@ namespace VacationRental.Api.Extensions
     {
         public static void AddBusinessServices(this IServiceCollection services)
         {
-            services.AddSingleton<IDictionary<int, int>>(new Dictionary<int, int>());
             services.AddSingleton<IDictionary<DateTime, int>>(new Dictionary<DateTime, int>());
             services.AddScoped<ICalendarService, CalendarService>();
             services.AddScoped<IBookingService, BookingService>();
@@ -44,7 +42,9 @@ namespace VacationRental.Api.Extensions
                 var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
                 var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
                 s.IncludeXmlComments(xmlPath);
+                s.IncludeXmlComments(string.Format(@"{0}\VacationRental.Domain.xml", AppContext.BaseDirectory));
             });
+
         }
     }
     

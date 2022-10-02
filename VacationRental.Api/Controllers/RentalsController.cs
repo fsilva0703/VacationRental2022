@@ -1,6 +1,4 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 using VacationRental.Domain.VacationRental.Interfaces;
 using VacationRental.Domain.VacationRental.Models;
