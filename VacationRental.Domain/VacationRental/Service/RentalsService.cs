@@ -14,6 +14,7 @@ namespace VacationRental.Domain.VacationRental.Service
         private readonly IRentalsRepository _rentalsRepository;
         private readonly IBookingRepository _bookingRepository;
         private readonly IDictionary<DateTime, int> _cacheBooking;
+
         public RentalsService(IRentalsRepository paramRentals, IBookingRepository paramBookingRepository, IDictionary<DateTime, int> paramCacheBooking)
         {
             _rentalsRepository = paramRentals;
@@ -47,24 +48,30 @@ namespace VacationRental.Domain.VacationRental.Service
 
         public async Task<ResourceIdViewModel> Post(RentalBindingModel model)
         {
-
-            var rentals = await _rentalsRepository.Get();
-
-            var NewRental = new RentalViewModel
+            try
             {
-                Id = rentals.Count + 1,
-                Units = model.Units,
-                PreparationTimeInDays = model.PreparationTimeInDays
-            };
+                int? lastId = await _rentalsRepository.GetLastId();
+                lastId = lastId is null ? 0 : lastId;
 
-            return await _rentalsRepository.Post(NewRental);
+                var NewRental = new RentalViewModel
+                {
+                    Id = (int)lastId + 1,
+                    Units = model.Units,
+                    PreparationTimeInDays = model.PreparationTimeInDays
+                };
+
+                return await _rentalsRepository.Post(NewRental);
+            }
+            catch(Exception)
+            {
+                throw new NotFoundException(EnumExceptions.InternalError.GetAttributeOfType<EnumMemberAttribute>().Value);
+            }
 
         }
 
         public async Task<ResourceIdViewModel> Put(int rentalId, RentalBindingModel model)
         {
             var rentals = await Get(rentalId);
-
             var bookings = await _bookingRepository.GetByRentalId(rentalId);
 
             List<int> listUnit = new();
@@ -80,13 +87,14 @@ namespace VacationRental.Domain.VacationRental.Service
 
                 Units unit = new() { Unit = booking.Unit };
 
-                if(!listUnit.Contains(unit.Unit)) 
-                    listUnit.Add(unit.Unit);
+                listUnit.Add(unit.Unit);
             }
+
+            var duplicateUnits = listUnit.GroupBy(n => n).Any(g => g.Count() > 1);
 
             _cacheBooking.Clear();
 
-            if(listUnit.Count > model.Units || (model.Units < listUnit.Count && listUnit.Count > 0))
+            if(duplicateUnits && listUnit.Count > model.Units)
                 throw new ConflictException(EnumExceptions.AvailableConflict.GetAttributeOfType<EnumMemberAttribute>().Value);
 
             bookings.ToList().ForEach(x => x.Start = x.Start.AddDays(model.PreparationTimeInDays));

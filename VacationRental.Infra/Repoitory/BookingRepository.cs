@@ -26,6 +26,12 @@ namespace VacationRental.Infra.Repoitory
             return _context.Booking.Where(x => x.RentalId == rentalId).ToList();
         }
 
+        public async Task<int?> GetLastId()
+        {
+            var result = _context?.Booking?.Select(x => x.Id).LastOrDefault();
+            return result;
+        }
+
         public async Task<ResourceIdViewModel> Post(BookingViewModel bookingModel)
         {
             _context.Booking.Add(bookingModel);

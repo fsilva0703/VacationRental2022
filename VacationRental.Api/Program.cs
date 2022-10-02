@@ -53,3 +53,5 @@ if (app.Environment.IsEnvironment("Testing") || app.Environment.IsEnvironment("S
 app.MapControllers();
 
 app.Run();
+
+public partial class Program { }

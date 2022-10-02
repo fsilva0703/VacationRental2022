@@ -23,6 +23,12 @@ namespace VacationRental.Infra.Repoitory
             return result;
         }
 
+        public async Task<int?> GetLastId()
+        {
+            var result = _context?.Rental?.Select(x => x.Id).LastOrDefault();
+            return result;
+        }
+
         public async Task<ResourceIdViewModel> Post(RentalViewModel rentalModel)
         {
             _context.Entry(rentalModel).State = Microsoft.EntityFrameworkCore.EntityState.Added;

@@ -7,9 +7,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "VacationRental.Api", "Vacat
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "VacationRental.Api.Tests", "VacationRental.Api.Tests\VacationRental.Api.Tests.csproj", "{57FE6E13-7144-459F-BCA8-431087D3DAEE}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VacationRental.Domain", "VacationRental.Domain\VacationRental.Domain.csproj", "{C7FD20E7-BB37-4665-984B-7E55E08C0F36}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "VacationRental.Domain", "VacationRental.Domain\VacationRental.Domain.csproj", "{C7FD20E7-BB37-4665-984B-7E55E08C0F36}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VacationRental.Infra", "VacationRental.Infra\VacationRental.Infra.csproj", "{9F33AAB8-650E-4BB0-98BB-26DA243385A2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "VacationRental.Infra", "VacationRental.Infra\VacationRental.Infra.csproj", "{9F33AAB8-650E-4BB0-98BB-26DA243385A2}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
